@@ -76,6 +76,19 @@ func login(c *gin.Context){
 		})
 	// }
 }
+func getting(c *gin.Context){
+	var user1 User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil{
+		panic("db connect error")
+	}
+	
+}
 
 func main() {
 
@@ -84,6 +97,6 @@ func main() {
 
 	r.POST("/register", register)
 	r.POST("/login", login)
-
+	r.GET("/someGet", getting)
 	r.Run(":3000") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
