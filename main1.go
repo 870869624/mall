@@ -2,6 +2,7 @@ package main
 
 import(
 	"fmt"
+	"github.com/gin-gonic/gin"
 )
 
 type register struct{
@@ -26,10 +27,7 @@ func register(c *gin.Context){
 		panic("you can`t do this")
 	}
 	sql := "insert into users(name, gender, age, headpicture, username,password) values ('" + users.name + "', '" + users.username +"', '" + users.password + "')"
-	if json.User != "manu" || json.Password != "123" {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
-		return
-	}
+	db.Exec(sql)
 }
 
 

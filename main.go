@@ -49,20 +49,39 @@ func register(c *gin.Context) {
 		})
 	}	
 }
+// 1 检查用户表中是否存在是否存在用户, 如果不存在提示错误， select passwod， username from user where username  = 传过来的用户名;
+// 2 如果存在在用户名， 则对比密码是否正确 数据库的密码是否等于你传过来的密码
+// 3 根据用户名或者id生成一个令牌返回给前段用户
+// 4 前段所有请求都会带上令牌，如果没有带上令牌/或者令牌错误，我们就认为它没有登录
+
+// client -> request- >  ｜ 取出request中的json数据
+//  					 ｜ server
+// client <- response <- ｜ 返回生成的令牌
+
 func login(c *gin.Context){
+	// 1 从请求体(json)中取出传过来的用户名和密码
 	var user User
-	var check User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	
+
+
+	
+	
+
+	var check User
 	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil{
 		panic("db connect error")
 	}
-	query := "select username, password from users where username = ? and password = ?"
-	db.Raw(query, user.Username, user.Password).Scan(&check)
+	db.Raw(
+		"select username, password from users where username = ? and password = ?", 
+		user.Username, 
+		user.Password
+	).Scan(&check)
 	fmt.Println("result", check.Username, check.Password);
 	// if check == nil {
 	// 	c.JSON(400, gin.H{
@@ -76,19 +95,19 @@ func login(c *gin.Context){
 		})
 	// }
 }
-func getting(c *gin.Context){
-	var user1 User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil{
-		panic("db connect error")
-	}
+// func getting(c *gin.Context){
+// 	var user1 User
+// 	if err := c.ShouldBindJSON(&user1); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
+// 	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
+// 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+// 	if err != nil{
+// 		panic("db connect error")
+// 	}
 	
-}
+// }
 
 func main() {
 
