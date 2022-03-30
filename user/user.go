@@ -31,7 +31,7 @@ func Pin (c *gin.Context){
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
-}
+}// 基础user
 func Register(c *gin.Context) {
 	var user RegisterUser
 	if err := c.ShouldBindJSON(&user); err != nil {

@@ -10,14 +10,9 @@ import (
 	"jinghaijun.com/mall/user"
 	"jinghaijun.com/mall/password"
 	"jinghaijun.com/mall/username"
+	"jinghaijun.com/mall/product"
 )
 
-
-// 基础user
-
-// func EProduct(c *gin.Context){
-
-// }
 
 
 func main(){
@@ -28,6 +23,9 @@ func main(){
 	r.POST("username/nameChange", username.NameChange)
 	r.POST("password/reset", password.ChangePassword)
 	r.POST("user/addtocart", user.AddtoCart)
-	// r.POST("/ergodicProduct", EProduct)
+	r.GET("cart", product.List)
+	r.POST("cart", product.Creat)
+	// r.PUT("cart/:id", product.Update) // /cart?id=12&name=13 /cart
+	// r.DELETE("cart/:id", product.Delete)
 	r.Run(":3000") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
