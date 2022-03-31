@@ -3,9 +3,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"fmt"
 	"net/http"
-  	"gorm.io/driver/mysql"
-  	"gorm.io/gorm"
+  	// "gorm.io/driver/mysql"
+  	// "gorm.io/gorm"
 	"crypto/sha256"
+	"jinghaijun.com/mall/db"
 )
 
 type User struct {
@@ -38,16 +39,12 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
-  	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("db connect error")
-	}
+	connection := db.Get_db()
 	h := sha256.New()
 	h.Write([]byte(user.Password))
 	cryptoPassword := fmt.Sprintf("%x", h.Sum(nil))
 	sql := "insert into users(name, username, password, gender, headpicture, age) values ('" + user.Name + "', '" + user.Username + "', '" + cryptoPassword +"')";
-	e := db.Exec(sql);
+	e := connection.Exec(sql);
 	if e == nil {
 		c.JSON(400, gin.H{
 			"message": "注册失败",
@@ -75,15 +72,11 @@ func Login(c *gin.Context){
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil{
-		panic("db connect error")
-	}
+	connection := db.Get_db()
 	h := sha256.New()
 	h.Write([]byte(user.Password))
 	cryptoPassword := fmt.Sprintf("%x", h.Sum(nil))
-	db.Raw("select username, password from users where username = ? and password = ?", user.Username, cryptoPassword).Scan(&check)
+	connection.Raw("select username, password from users where username = ? and password = ?", user.Username, cryptoPassword).Scan(&check)
 	fmt.Println("result", check.Username, check.Password);
 	if check.Username == "" {
 		c.JSON(400, gin.H{
@@ -105,11 +98,7 @@ func AddtoCart(c *gin.Context){
 		c.JSON(400, gin.H{"message": "参数错误"})
 	}
 	fmt.Println("------",addTocart.UserID, addTocart.ProductID, addTocart.Price, addTocart.Picture)
-	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil{
-		panic("db connect error")
-	}
-	db.Exec("insert into cart (users_id, catalogue_id, product_id, priceINtotal, picture) values (?, ?, ?, ?, ?)", addTocart.UserID, addTocart.CatalogueID, addTocart.ProductID, addTocart.Price, addTocart.Picture)
+	connection := db.Get_db()
+	connection.Exec("insert into cart (users_id, catalogue_id, product_id, priceINtotal, picture) values (?, ?, ?, ?, ?)", addTocart.UserID, addTocart.CatalogueID, addTocart.ProductID, addTocart.Price, addTocart.Picture)
 }
 

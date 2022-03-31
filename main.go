@@ -23,9 +23,11 @@ func main(){
 	r.POST("username/nameChange", username.NameChange)
 	r.POST("password/reset", password.ChangePassword)
 	r.POST("user/addtocart", user.AddtoCart)
-	r.GET("cart", product.List)
-	r.POST("cart", product.Creat)
-	// r.PUT("cart/:id", product.Update) // /cart?id=12&name=13 /cart
-	// r.DELETE("cart/:id", product.Delete)
+	r.GET("product/List", product.List)
+	r.POST("product", product.Creat)
+	r.PUT("product/:name", product.Update) // /cart?id=12&name=13 /cart（这里是根据ID更新产品信息）
+	r.DELETE("product/:id", product.Delete)
+	//r.DELETE("cart/:name", product.Delete)(具体根据什么删除可以从这里入手)
 	r.Run(":3000") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.POST("")
 }

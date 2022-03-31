@@ -1,10 +1,11 @@
 package product
 import(
-	"gorm.io/driver/mysql"
+	// "gorm.io/driver/mysql"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-	"net/http"
+	// "gorm.io/gorm"
+	// "net/http"
 	"fmt"
+	"jinghaijun.com/mall/db"
 )
 //用户发送请求信息，调用数据库内容并且返回给前端
 type Product struct{
@@ -15,7 +16,11 @@ type Product struct{
 	Total int
 	Size string
 }
-//从前端获得数据并且计入到商品信息中中。
+type Change struct{
+	ID int
+	Name string
+}
+//从前端获得数据并且计入到商品信息中中。此处属于商品信息录入
 func Creat(c *gin.Context){
 	var add Product
 	err := c.ShouldBindJSON(&add)
@@ -23,36 +28,48 @@ func Creat(c *gin.Context){
 		c.JSON(400, gin.H{"message": "参数错误"})
 		return
 	}
-	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
-  	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("db connect error")
-	}
+	connection := db.Get_db()
 	fmt.Println(add.Price, add.Total, add.ID, add.Name, add.Image, add.Size)
-	db.Exec("insert into prodouct (id, name, image, price, total, size) values (?, ?, ?, ?, ?, ?)", add.ID, add.Name, add.Image, add.Price, add.Total, add.Size)
+	connection.Exec("insert into product (id, name, image, price, total, size) values (?, ?, ?, ?, ?, ?)", add.ID, add.Name, add.Image, add.Price, add.Total, add.Size)
 }
-
-// func Delete(){
-
-// }
-
-// func Update(){
-
-// }
-func List(c *gin.Context){
-	var ShowProduct Product
-	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
-  	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("db connect error")
+//从前端获取ID或者是商品名称进行匹配然后删除数据
+func Delete(c *gin.Context){
+	var delete Change
+	err := c.ShouldBindJSON(&delete)
+	if err != nil{
+		c.JSON(400, gin.H{"message": "参数错误"})
+		return
 	}
-	db.Raw("select * from product").Scan(&ShowProduct)
-	c.JSON(http.StatusOK, gin.H{
-		"ID": ShowProduct.ID,
-		"Name": ShowProduct.Name,
-		"image": ShowProduct.Image,
-		"Price": ShowProduct.Price,
-		"Total": ShowProduct.Total,
-		"SIze": ShowProduct.Size,
-	})
+	connection := db.Get_db()
+	fmt.Println("删除的是编号为：",delete.ID)
+	connection.Exec("Delete from product where id = ?", delete.ID)
+	if err == nil{
+		c.JSON(400, gin.H{"message": "删除失败"})
+	}
+}
+// 从前端获取到产品的各种信息根据要求进行修改(此处只是更新单个信息，例如产品名字)
+func Update(c *gin.Context){
+	var New Change
+	if err := c.ShouldBindJSON(&New); err != nil{
+		c.JSON(400, gin.H{"message": "参数错误"})
+		return
+	}
+	connection := db.Get_db()
+	fmt.Println(New.Name)
+	connection.Exec("Update product set name = ? where id = ?", New.Name, New.ID)
+}
+//从前端获取到请求要求查看商品信息，此处返回（后期修改为用ID或者商品名查看或者根据价格区间查找）
+func List(c *gin.Context){
+	var ShowProduct []Product
+	connection := db.Get_db()
+	connection.Raw("select * from product").Find(&ShowProduct)
+	fmt.Println("ShowProduct", ShowProduct)
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"ID": ShowProduct.ID,
+	// 	"Name": ShowProduct.Name,
+	// 	"image": ShowProduct.Image,
+	// 	"Price": ShowProduct.Price,
+	// 	"Total": ShowProduct.Total,
+	// 	"SIze": ShowProduct.Size,
+	// })
 }

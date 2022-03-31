@@ -3,9 +3,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"fmt"
 	// "net/http"
-  	"gorm.io/driver/mysql"
-  	"gorm.io/gorm"
+  	// "gorm.io/driver/mysql"
+  	// "gorm.io/gorm"
 	// "crypto/sha256"
+	"jinghaijun.com/mall/db"
 )
 type User struct {
 	Username string
@@ -29,10 +30,11 @@ func NameChange(c *gin.Context){
 		c.JSON(400, gin.H{"message": "参数错误"})
 		return 
 	}
-	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil{
-		panic("db connect error")
+	fmt.Println(NewName.ID, NewName.Username, NewName.Password, NewName.Name)
+	if NewName.ID == 0 || NewName.Name == ""{
+		c.JSON(400, gin.H{"message": "参数错误"})
+		return 
 	}
-	db.Exec("update users set name = ? where id = ?", NewName.Name, NewName.ID)
+	d := db.Get_db()
+	d.Exec("update users set name = ? where id = ?", NewName.Name, NewName.ID)
 }

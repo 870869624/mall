@@ -3,9 +3,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"fmt"
 	// "net/http"
-  	"gorm.io/driver/mysql"
-  	"gorm.io/gorm"
+  	// "gorm.io/driver/mysql"
+  	// "gorm.io/gorm"
 	"crypto/sha256"
+	"jinghaijun.com/mall/db"
 )
 type PasswordChange struct{
 	Id int
@@ -23,13 +24,9 @@ func ChangePassword(c *gin.Context){
 	if data.Id == 0 || data.Password == ""{ 
 		c.JSON(400, gin.H{"message": "参数不全"})
 	}
-	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil{
-		panic("db connect error")
-	}
+	connection := db.Get_db()
 	var record PasswordChange
-	db.Raw("select password, id from users where id = ?", data.Id).Scan(&record)
+	connection.Raw("select password, id from users where id = ?", data.Id).Scan(&record)
 	fmt.Println("record:", record.Id, record.Password)
 	if record.Id == 0{
 		c.JSON(400, gin.H{"message": "没有找到该用户"})
@@ -39,7 +36,7 @@ func ChangePassword(c *gin.Context){
 	h := sha256.New()
 	h.Write([]byte(data.Password))
 	cryptoPassword := fmt.Sprintf("%x", h.Sum(nil))
-	result := db.Exec("update users set password = ? where id = ?", cryptoPassword, data.Id)
+	result := connection.Exec("update users set password = ? where id = ?", cryptoPassword, data.Id)
 	if result.Error != nil {
 		c.JSON(400, gin.H{"message": "操作失败"})
 		return;
