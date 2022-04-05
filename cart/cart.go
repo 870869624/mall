@@ -1,38 +1,34 @@
 package cart
-import(
-	"fmt"
-	"gorm.io/driver/mysql"
+
+import (
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-	"net/http"
+	"jinghaijun.com/mall/db"
 )
-type cart struct{
-	ID int
-	Users_id int
+
+type cart struct {
+	ID           int
+	Users_id     int
 	Catalogue_id int
-	Product_id int
+	Product_id   int
 	PriceINtotal int
-	Picture string
+	Picture      string
 }
-func Creat(c *gin.Context){
+
+func Creat(c *gin.Context) {
 	var add cart
 	err := c.ShouldBindJSON(&add)
-	if err != nil{
+	if err != nil {
 		c.JSON(400, gin.H{"message": "参数错误"})
 		return
 	}
-	dsn := "root:123456@tcp(127.0.0.1:3306)/mall?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-  	if err != nil {
-	  panic("db connect error")
-  	}
+	connection := db.Get_db()
 }
-func Delete(){
+func Delete() {
 
 }
-func Update(){
+func Update() {
 
 }
-func List(){
+func List() {
 
 }

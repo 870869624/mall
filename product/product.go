@@ -3,9 +3,11 @@ import(
 	// "gorm.io/driver/mysql"
 	"github.com/gin-gonic/gin"
 	// "gorm.io/gorm"
-	// "net/http"
+	"net/http"
 	"fmt"
 	"jinghaijun.com/mall/db"
+	"strconv"
+	"strings"
 )
 //用户发送请求信息，调用数据库内容并且返回给前端
 type Product struct{
@@ -58,18 +60,39 @@ func Update(c *gin.Context){
 	fmt.Println(New.Name)
 	connection.Exec("Update product set name = ? where id = ?", New.Name, New.ID)
 }
+
+
+type ProductQuery struct {
+	name string
+	price_gt float64
+	price_lt float64
+}
 //从前端获取到请求要求查看商品信息，此处返回（后期修改为用ID或者商品名查看或者根据价格区间查找）
 func List(c *gin.Context){
 	var ShowProduct []Product
 	connection := db.Get_db()
-	connection.Raw("select * from product").Find(&ShowProduct)
-	fmt.Println("ShowProduct", ShowProduct)
-	// c.JSON(http.StatusOK, gin.H{
-	// 	"ID": ShowProduct.ID,
-	// 	"Name": ShowProduct.Name,
-	// 	"image": ShowProduct.Image,
-	// 	"Price": ShowProduct.Price,
-	// 	"Total": ShowProduct.Total,
-	// 	"SIze": ShowProduct.Size,
-	// })
+	name := c.DefaultQuery("name", "")
+	price_gt := c.DefaultQuery("price_gt", "")
+	price_lt := c.DefaultQuery("price_lt", "")
+	query := []interface{}{}
+	queryString := []string{}
+	if (name != "") {
+		query = append(query, name)
+		queryString = append(queryString, "name = ?");
+	}
+	if (price_gt != "") {
+		v, _ := strconv.Atoi(price_gt)
+		query = append(query, v)
+		queryString = append(queryString, "price >= ?");
+	}
+
+	if (price_lt != "") {
+		v, _ := strconv.Atoi(price_lt)
+		query = append(query, v)
+		queryString = append(queryString, "price < ?");
+	}
+	connection.Table("product").Where(strings.Join(queryString, " and "), query...).Find(&ShowProduct);
+	c.JSON(http.StatusOK, gin.H{
+		"result": ShowProduct,
+	})
 }
